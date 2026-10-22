@@ -1,11 +1,12 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import type { Request } from 'express';
 
 const base = {
   standardHeaders: true,
   legacyHeaders: false,
   // Auth responses must not vary by anything the limiter infers from the body.
-  keyGenerator: (req: Request) => req.ip ?? 'unknown',
+  // IPv6 has to be bucketed by subnet, or a single client can bypass the limit with new addresses.
+  keyGenerator: (req: Request) => ipKeyGenerator(req.ip ?? 'unknown'),
 };
 
 export const authLimiter = rateLimit({
