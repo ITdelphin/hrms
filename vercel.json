@@ -4,6 +4,13 @@
   "installCommand": "npm ci && npx prisma generate --schema=server/prisma/schema.prisma",
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api",
+      "transforms": [{ "type": "request.path", "op": "set", "args": "/api/$1" }]
+    }
+  ],
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "crons": [{ "path": "/api/cron/reminders", "schedule": "10 8 * * *" }]
 }
