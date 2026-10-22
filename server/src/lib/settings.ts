@@ -1,7 +1,7 @@
 import { prisma } from './prisma.js';
 
 export const CURRENCY_KEY = 'currency';
-export const DEFAULT_CURRENCY = 'KES';
+export const DEFAULT_CURRENCY = 'RWF';
 
 export const getCurrency = async (): Promise<string> => {
   const row = await prisma.setting.findUnique({ where: { key: CURRENCY_KEY } });

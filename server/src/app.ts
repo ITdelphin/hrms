@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { type Application } from 'express';
+import express, { type Application, type RequestHandler } from 'express';
 import helmet from 'helmet';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
@@ -24,6 +24,24 @@ import { reportsRouter } from './modules/reports/reports.routes.js';
 import { prisma } from './lib/prisma.js';
 
 const origins = new Set(env.CORS_ORIGINS.split(',').map((origin) => origin.trim()));
+
+/**
+ * `cors` hands the origin callback only the header value, so the request's own host is
+ * captured per request. Vercel preview URLs change on every deploy, which rules out a
+ * static allowlist for the client this same app serves.
+ */
+const corsMiddleware: RequestHandler = (req, res, next) => {
+  const origin = (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!requestOrigin || origins.has(requestOrigin)) return callback(null, true);
+    try {
+      if (new URL(requestOrigin).hostname === req.hostname) return callback(null, true);
+    } catch {
+      /* a malformed Origin header is simply not allowed */
+    }
+    callback(new Error('Origin not allowed by CORS'), false);
+  };
+  cors({ origin, credentials: true })(req, res, next);
+};
 
 const requestLog = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const startedAt = Date.now();
@@ -51,15 +69,7 @@ export const createApp = (): Application => {
       crossOriginResourcePolicy: { policy: 'same-site' },
     }),
   );
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin || origins.has(origin)) return callback(null, true);
-        callback(new Error('Origin not allowed by CORS'));
-      },
-      credentials: true,
-    }),
-  );
+  app.use(corsMiddleware);
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
   if (env.NODE_ENV !== 'test') app.use(requestLog);

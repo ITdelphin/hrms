@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    // The sources are TypeScript but use ESM ".js" import specifiers.
+    extensionAlias: { '.js': ['.ts', '.js'] },
+  },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],

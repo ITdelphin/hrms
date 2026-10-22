@@ -1,18 +1,17 @@
-let currencyCode = 'USD';
+let currencyCode = 'RWF';
 
 export const setCurrency = (code: string) => {
-  currencyCode = code || 'USD';
+  currencyCode = code || 'RWF';
 };
 
 export const getCurrency = () => currencyCode;
 
+const moneyFormat = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** The ISO code is printed instead of Intl.NumberFormat's currency style, which abbreviates RWF to "FRW". */
 export const formatMoney = (value: number | null | undefined, code = currencyCode): string => {
   const amount = Number(value ?? 0);
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: code,
-    maximumFractionDigits: 2,
-  }).format(Number.isFinite(amount) ? amount : 0);
+  return `${code} ${moneyFormat.format(Number.isFinite(amount) ? amount : 0)}`;
 };
 
 export const formatNumber = (value: number | null | undefined): string =>

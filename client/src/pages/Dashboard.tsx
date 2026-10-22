@@ -61,7 +61,6 @@ export const Dashboard = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Welcome back!</h1>
-        <p className="text-sm text-slate-500">Here's an overview of your rental properties and payments.</p>
       </div>
 
       {/* Stat cards */}
@@ -106,7 +105,7 @@ export const Dashboard = () => {
       {/* Charts */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Rental Income Overview" />
+          <CardHeader title="Rental Income" />
           <div className="p-5">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chartData}>

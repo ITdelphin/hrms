@@ -1,10 +1,16 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { connectionString, portIsOpen, startCluster } from '../src/scripts/cluster.js';
+import { connectionString, portIsOpen, startCluster, stopCluster } from '../src/scripts/cluster.js';
 
 const serverRoot = path.resolve('.');
 
-const TEST_ENV = {
+const TEST_CLUSTER = {
+  databaseDir: path.resolve('.data/postgres-test'),
+  port: 5434,
+  database: 'hrms_test',
+};
+
+const TEST_ENV: Record<string, string> = {
   NODE_ENV: 'test',
   PORT: '4100',
   JWT_SECRET: 'test-only-secret-value-with-more-than-32-characters',
@@ -24,9 +30,9 @@ const TEST_ENV = {
 };
 
 const runPrisma = (args: string[], databaseUrl: string): void => {
-  const result = spawnSync('npx', ['--no-install', 'prisma', ...args], {
+  const result = spawnSync(`npx --no-install prisma ${args.join(' ')}`, {
     cwd: serverRoot,
-    env: { ...process.env, DATABASE_URL: databaseUrl },
+    env: { ...process.env, DATABASE_URL: databaseUrl, DIRECT_URL: databaseUrl },
     encoding: 'utf8',
     shell: true,
   });
@@ -36,17 +42,18 @@ const runPrisma = (args: string[], databaseUrl: string): void => {
 };
 
 export const setup = async () => {
-  const { config } = await startCluster({
-    databaseDir: path.resolve('.data/postgres-test'),
-    port: 5434,
-    database: 'hrms_test',
-  });
-
+  const { config, wasRunning } = await startCluster(TEST_CLUSTER);
   if (!(await portIsOpen(config.port))) throw new Error(`test postgres is not listening on ${config.port}`);
 
   const databaseUrl = connectionString(config);
-  // Proves the migration history is what tests actually run against.
-  runPrisma(['migrate', 'reset', '--force', '--skip-generate'], databaseUrl);
+  // dotenv has already loaded the developer DATABASE_URL, which points at a real database.
+  // Prisma follows directUrl for migrate commands, so both must be pinned to the test cluster.
+  process.env = { ...process.env, ...TEST_ENV, DATABASE_URL: databaseUrl, DIRECT_URL: databaseUrl };
 
-  return { ...TEST_ENV, DATABASE_URL: databaseUrl };
+  // Proves the migration history is what tests actually run against.
+  runPrisma(['migrate', 'reset', '--force', '--skip-generate', '--schema', 'prisma/schema.prisma'], databaseUrl);
+
+  return async () => {
+    if (!wasRunning) await stopCluster(TEST_CLUSTER);
+  };
 };
