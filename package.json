@@ -1,6 +1,7 @@
 {
   "name": "hrms",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "description": "House Rental Management System - owner-only property, tenant, lease and rent management",
   "workspaces": [
