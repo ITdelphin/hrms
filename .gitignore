@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+coverage/
+.data/
+*.log
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+.vercel/
+verify-shots/
+.qoder/settings.local.json
+.DS_Store
+.vscode/
+.idea/

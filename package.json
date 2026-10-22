@@ -1,0 +1,38 @@
+{
+  "name": "hrms",
+  "private": true,
+  "version": "1.0.0",
+  "description": "House Rental Management System - owner-only property, tenant, lease and rent management",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "db:start": "npm run db:start -w server",
+    "db:stop": "npm run db:stop -w server",
+    "db:migrate": "npm run db:migrate -w server",
+    "db:seed": "npm run db:seed -w server",
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w server && npm run build -w client",
+    "start": "npm run start -w server",
+    "test": "npm run test -w server",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.25",
+    "@types/express-serve-static-core": "4.19.9",
+    "concurrently": "^9.1.2"
+  },
+  "allowScripts": {
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true,
+    "@embedded-postgres/windows-x64@17.10.0-beta.17": true,
+    "embedded-postgres@17.10.0-beta.17": true
+  }
+}
